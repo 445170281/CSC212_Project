@@ -96,8 +96,70 @@ public class AVLTree<T> {
 		r.height = max(height(r.left), height(r.right)) + 1;
 		return r;
 	}
+	
+	private int getBalance(AVLNode<T> node) {
+		if (node == null)
+			return 0;
+		return height(node.right) - height(node.left);
+	}
+    //helper for finding max in subtree
+	private AVLNode<T> maxNode(AVLNode<T> node) {
+		if (node == null || node.right == null)
+			return node;
+		return maxNode(node.right);
+	}
 
-	// kinda similar to the insert, user gives key only but
+	public void delete(int key) {
+		root = deleteNode(root, key);
+	}
+
+	public AVLNode<T> deleteNode(AVLNode<T> root, int key) {
+
+		if (root == null)
+			return root;
+
+		if (key < root.key)
+			root.left = deleteNode(root.left, key);
+
+		else if (key > root.key)
+			root.right = deleteNode(root.right, key);
+
+		else {
+
+			if (root.left == null)
+				return root.right;
+
+			else if (root.right == null)
+				return root.left;
+
+			AVLNode<T> temp = maxNode(root.left);
+
+			root.key = temp.key;
+			root.data = temp.data;
+
+			root.left = deleteNode(root.left, temp.key);
+		}
+
+		root.height = max(height(root.left), height(root.right)) + 1;
+
+		int balance = getBalance(root);
+
+		if (balance < -1 && getBalance(root.left) <= 0)
+			return llRotation(root);
+
+		if (balance < -1 && getBalance(root.left) > 0)
+			return lrRotation(root);
+
+		if (balance > 1 && getBalance(root.right) >= 0)
+			return rrRotation(root);
+
+		if (balance > 1 && getBalance(root.right) < 0)
+			return rlRotation(root);
+
+		return root;
+	}
+
+	// kinda similar to the insert,Delete user gives key only but
 	// we need a node (root) to start searching
 	public T search(int key) {
 		AVLNode<T> node = searchNode(root, key);
