@@ -1,43 +1,42 @@
-package phase2; 
+package phase2;
 
 import java.util.Scanner;
 
 public class Main {
 
-    // Define AVL Trees for data storage (Single Source of Truth)
     static AVLTree<Product> productsTree = new AVLTree<>();
     static AVLTree<Customer> customersTree = new AVLTree<>();
     static AVLTree<Order> ordersTree = new AVLTree<>();
-    
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
         System.out.println(">>> Loading Data into AVL Trees...");
-        
-        // Load data using the Data helper class
         Data.loadProducts(productsTree);
         Data.loadCustomers(customersTree);
         Data.loadOrders(ordersTree, customersTree, productsTree);
         Data.loadReviews(productsTree, customersTree);
-        
-        System.out.println("We Are Ready\n");
+        System.out.println(">>> System Ready!\n");
 
         while (true) {
             printMenu();
             int choice = getIntInput();
 
             switch (choice) {
-                // 1-3: View All (AVL prints in-order automatically)
+                // View All (Printed In-Order by AVL)
                 case 1: productsTree.inOrderPrint(); break;
                 case 2: customersTree.inOrderPrint(); break;
                 case 3: ordersTree.inOrderPrint(); break;
                 
-                // 4: Report using the new 'traverse' method
+                // Case 4: View Products with Ratings
                 case 4: 
-                    productsTree.traverse(p -> System.out.printf("%s | Rating: %.2f\n", p.getName(), p.getAverageRating())); 
+                    productsTree.traverse(new Action<Product>() {
+                        public void execute(Product p) {
+                            System.out.printf("%s | Rating: %.2f\n", p.getName(), p.getAverageRating());
+                        }
+                    });
                     break;
 
-                // Edit and Remove operations
+                // Edit/Remove Operations
                 case 5: editProduct(); break;
                 case 6: removeProduct(); break;
                 case 7: editCustomer(); break;
@@ -45,39 +44,29 @@ public class Main {
                 case 9: editOrder(); break;
                 case 10: removeOrder(); break;
                 case 11: editReview(); break;
-
-                // Add operations
+                
+                // Add Operations
                 case 12: addProduct(); break;
                 case 13: addCustomer(); break;
                 case 14: placeOrder(); break;
                 case 15: addReview(); break;
-
                 case 16: viewCustomerHistory(); break;
                 
-                // 17: Out of Stock Report
+                // Case 17: Out of Stock
                 case 17: 
                     System.out.println("--- Out of Stock ---");
-                    productsTree.traverse(p -> {
-                        if (p.isOutOfStock()) System.out.println(p);
+                    productsTree.traverse(new Action<Product>() {
+                        public void execute(Product p) {
+                            if (p.isOutOfStock()) System.out.println(p);
+                        }
                     });
                     break;
 
+                // Reports
                 case 18: printTopRatedProducts(); break;
-                
-                // 19: Filter orders by date range
-                case 19: 
-                     System.out.print("Start Date: "); String start = scanner.nextLine();
-                     System.out.print("End Date: "); String end = scanner.nextLine();
-                     ordersTree.traverse(o -> {
-                         if (o.isWithinDateRange(start, end)) System.out.println(o);
-                     });
-                     break;
-
+                case 19: printOrdersBetweenDates(); break;
                 case 20: printCommonHighRatedProducts(); break;
-
-                case 21: 
-                    System.out.println("Goodbye!"); 
-                    return;
+                case 21: System.out.println("Goodbye!"); return;
                 default: System.out.println("Invalid choice.");
             }
         }
@@ -86,7 +75,7 @@ public class Main {
     // --- Helper Methods ---
 
     private static void printMenu() {
-        System.out.println("\n===== AVL E-Commerce System =====");
+        System.out.println("\n===== E-Commerce System =====");
         System.out.println("1. View Products       2. View Customers       3. View Orders");
         System.out.println("4. View Prod w/Rating  5. Edit Product         6. Remove Product");
         System.out.println("7. Edit Customer       8. Remove Customer      9. Edit Order");
@@ -177,7 +166,6 @@ public class Main {
     private static void placeOrder() {
         System.out.print("Order ID: "); int oid = getIntInput();
         if (ordersTree.search(oid) != null) { System.out.println("Exists!"); return; }
-        
         System.out.print("Cust ID: "); Customer c = customersTree.search(getIntInput());
         if (c == null) { System.out.println("Cust Not Found."); return; }
 
@@ -237,14 +225,17 @@ public class Main {
         else System.out.println("Not found.");
     }
 
-    // --- Top 3 (Requires sorting logic) ---
+    // --- Top 3 Logic ---
     private static void printTopRatedProducts() {
-        // Collect all products into a temporary list using traverse
         MyLinkedList<Product> temp = new MyLinkedList<>();
-        productsTree.traverse(p -> temp.insert(p));
+        
+        productsTree.traverse(new Action<Product>() {
+            public void execute(Product p) {
+                temp.insert(p);
+            }
+        });
 
         System.out.println("--- Top 3 Products ---");
-        // Find top 3 and remove them from temp list
         for(int i=0; i<3; i++) {
             Product best = null;
             double maxR = -1;
@@ -258,7 +249,6 @@ public class Main {
             }
             if (best != null) {
                 System.out.printf("#%d %s (%.2f)\n", i+1, best.getName(), maxR);
-                // Manual removal from temp list
                 if (temp.head.data == best) temp.head = temp.head.next;
                 else {
                     Node<Product> c = temp.head;
@@ -271,20 +261,35 @@ public class Main {
         }
     }
 
+    // --- Orders Between Dates ---
+    private static void printOrdersBetweenDates() {
+        System.out.print("Start Date: "); String start = scanner.nextLine();
+        System.out.print("End Date: "); String end = scanner.nextLine();
+        
+        ordersTree.traverse(new Action<Order>() {
+            public void execute(Order o) {
+                if (o.isWithinDateRange(start, end)) System.out.println(o);
+            }
+        });
+    }
+
+    // --- Common High Rated ---
     private static void printCommonHighRatedProducts() {
         System.out.print("Cust 1: "); int id1 = getIntInput();
         System.out.print("Cust 2: "); int id2 = getIntInput();
         
-        productsTree.traverse(p -> {
-            boolean c1 = false, c2 = false;
-            Node<Review> r = p.getReviews().head;
-            while(r != null) {
-                if(r.data.getCustomerId() == id1) c1 = true;
-                if(r.data.getCustomerId() == id2) c2 = true;
-                r = r.next;
+        productsTree.traverse(new Action<Product>() {
+            public void execute(Product p) {
+                boolean c1 = false, c2 = false;
+                Node<Review> r = p.getReviews().head;
+                while(r != null) {
+                    if(r.data.getCustomerId() == id1) c1 = true;
+                    if(r.data.getCustomerId() == id2) c2 = true;
+                    r = r.next;
+                }
+                if (c1 && c2 && p.getAverageRating() > 4.0)
+                    System.out.println("Common High Rated: " + p.getName());
             }
-            if (c1 && c2 && p.getAverageRating() > 4.0)
-                System.out.println("Common High Rated: " + p.getName());
         });
     }
 
