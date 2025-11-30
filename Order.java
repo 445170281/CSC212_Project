@@ -46,8 +46,26 @@ public class Order {
         this.status = status;
     }
 
-    public boolean isWithinDateRange(String start, String end) {
-        return date.compareTo(start) >= 0 && date.compareTo(end) <= 0;
+       public boolean isWithinDateRange(String start, String end) {
+        String d  = normalize(date);
+        String s2 = normalize(start);
+        String e2 = normalize(end);
+
+        return d.compareTo(s2) >= 0 && d.compareTo(e2) <= 0;
+    }
+
+    private String normalize(String d) {
+        // d = "M/D/YYYY" أو "MM/DD/YYYY"
+        String[] parts = d.split("/");
+
+        String month = parts[0];
+        String day   = parts[1];
+        String year  = parts[2];
+
+        if (month.length() == 1) month = "0" + month;
+        if (day.length() == 1)   day   = "0" + day;
+
+        return year + "-" + month + "-" + day; 
     }
 
     @Override
@@ -59,3 +77,4 @@ public class Order {
                 ", Status: " + status;
     }
 }
+
