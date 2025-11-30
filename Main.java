@@ -86,9 +86,9 @@ public class Main {
 				printTopRatedProducts();
 				break;
 			case 19:
-				System.out.print("Start date: ");
+				System.out.print("Start date(M/D/Y): ");
 				String s = scanner.nextLine();
-				System.out.print("End date: ");
+				System.out.print("End date(M/D/Y): ");
 				String e = scanner.nextLine();
 				printOrdersBetweenDates(s, e);
 				break;
@@ -585,3 +585,4 @@ public class Main {
 	}
 
 }
+
