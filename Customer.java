@@ -1,4 +1,4 @@
-package csc212.copy;
+package Project_212;
 
 public class Customer {
     private int customerId;
