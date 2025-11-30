@@ -12,6 +12,10 @@ public class AVLTree<T> {
 		return root == null;
 	}
 
+	private int getSize(AVLNode<T> node) {
+		return (node == null) ? 0 : node.size;
+	}
+
 	// i know that we have a height attribute but in case the node is null we most
 	// check every time unlike using this method
 	private int height(AVLNode<T> node) {
@@ -30,7 +34,10 @@ public class AVLTree<T> {
 		B.left = A;
 
 		A.height = max(height(A.left), height(A.right)) + 1;
-		B.height = max(height(B.right), A.height) + 1;
+		A.size = getSize(A.left) + getSize(A.right) + 1;
+
+		B.height = max(height(B.left), height(B.right)) + 1;
+		B.size = getSize(B.left) + getSize(B.right) + 1;
 
 		return B;
 	}
@@ -42,7 +49,10 @@ public class AVLTree<T> {
 		B.right = A;
 
 		A.height = max(height(A.left), height(A.right)) + 1;
-		B.height = max(height(B.left), A.height) + 1;
+		A.size = getSize(A.left) + getSize(A.right) + 1;
+
+		B.height = max(height(B.left), height(B.right)) + 1;
+		B.size = getSize(B.left) + getSize(B.right) + 1;
 
 		return B;
 	}
@@ -94,15 +104,18 @@ public class AVLTree<T> {
 		}
 
 		r.height = max(height(r.left), height(r.right)) + 1;
+		r.size = getSize(r.left) + getSize(r.right) + 1;
+
 		return r;
 	}
-	
+
 	private int getBalance(AVLNode<T> node) {
 		if (node == null)
 			return 0;
 		return height(node.right) - height(node.left);
 	}
-    //helper for finding max in subtree
+
+	// helper for finding max in subtree
 	private AVLNode<T> maxNode(AVLNode<T> node) {
 		if (node == null || node.right == null)
 			return node;
@@ -113,6 +126,7 @@ public class AVLTree<T> {
 		root = deleteNode(root, key);
 	}
 
+	// internal delete
 	public AVLNode<T> deleteNode(AVLNode<T> root, int key) {
 
 		if (root == null)
@@ -141,6 +155,7 @@ public class AVLTree<T> {
 		}
 
 		root.height = max(height(root.left), height(root.right)) + 1;
+		root.size = getSize(root.left) + getSize(root.right) + 1;
 
 		int balance = getBalance(root);
 
@@ -185,20 +200,16 @@ public class AVLTree<T> {
 		if (r == null)
 			return;
 		inOrder(r.left);
-		System.out.println("Key: " + r.key + " Data: " + r.data);
+		System.out.println(r.data);
 		inOrder(r.right);
 	}
-		public void traverse(Action<T> action) {
-        traverseInOrder(root, action);
-    }
 
-    private void traverseInOrder(AVLNode<T> node, Action<T> action) {
-        if (node != null) {
-            traverseInOrder(node.left, action);
-            action.execute(node.data); 
-            traverseInOrder(node.right, action);
-        }
-    }
+	public AVLNode<T> getRoot() {
+		return root;
+	}
+
+	public int getSize() {
+		return getSize(root);
+	}
+
 }
-
-
