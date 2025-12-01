@@ -1,4 +1,4 @@
-package csc212.copy;
+package Project_212;
 
 public class Node<T> {
     T data;
@@ -9,3 +9,4 @@ public class Node<T> {
         this.next = null;
     }
 }
+
