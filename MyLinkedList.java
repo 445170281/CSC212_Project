@@ -1,4 +1,4 @@
-package csc212.copy;
+package Project_212;
 
 public class MyLinkedList<T> implements List<T> {
     Node<T> head;
@@ -107,4 +107,5 @@ public class MyLinkedList<T> implements List<T> {
     public boolean isEmpty() {
         return head == null;
     }
+
 }
