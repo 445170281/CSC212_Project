@@ -1,4 +1,4 @@
-package csc212.copy;
+package Project_212;
 
 public interface List<T> {
     boolean empty();
@@ -12,4 +12,5 @@ public interface List<T> {
     void remove();
     void printAll();
 }
+
 
